@@ -158,10 +158,70 @@ PVRSRV_ERROR SGXScheduleCCBCommand(PVRSRV_SGXDEV_INFO 	*psDevInfo,
 	SGXMKIF_COMMAND *psSGXCommand;
 #if defined(PDUMP)
 	IMG_VOID *pvDumpCommand;
+	IMG_BOOL bPDumpIsSuspended = PDumpIsSuspended();
 #else
 	PVR_UNREFERENCED_PARAMETER(ui32CallerID);
 	PVR_UNREFERENCED_PARAMETER(ui32PDumpFlags);
 #endif
+
+#if defined(FIX_HW_BRN_28889)
+	
+
+
+
+	if ( (eCmdType != SGXMKIF_CMD_PROCESS_QUEUES) && 
+		 ((psDevInfo->ui32CacheControl & SGXMKIF_CC_INVAL_DATA) != 0) &&
+		 ((psDevInfo->ui32CacheControl & (SGXMKIF_CC_INVAL_BIF_PT | SGXMKIF_CC_INVAL_BIF_PD)) != 0))
+	{
+	#if defined(PDUMP)
+		PVRSRV_KERNEL_MEM_INFO	*psSGXHostCtlMemInfo = psDevInfo->psKernelSGXHostCtlMemInfo;
+	#endif
+		SGXMKIF_HOST_CTL	*psSGXHostCtl = psDevInfo->psSGXHostCtl;
+		SGXMKIF_COMMAND		sCacheCommand = {0};
+
+		eError = SGXScheduleCCBCommand(psDevInfo,
+									   SGXMKIF_CMD_PROCESS_QUEUES,
+									   &sCacheCommand,
+									   ui32CallerID,
+									   ui32PDumpFlags);
+		if (eError != PVRSRV_OK)
+		{
+			goto Exit;
+		}
+		
+		
+		#if !defined(NO_HARDWARE)
+		if(PollForValueKM(&psSGXHostCtl->ui32InvalStatus,
+						  PVRSRV_USSE_EDM_BIF_INVAL_COMPLETE,
+						  PVRSRV_USSE_EDM_BIF_INVAL_COMPLETE,
+						  2 * MAX_HW_TIME_US/WAIT_TRY_COUNT,
+						  WAIT_TRY_COUNT) != PVRSRV_OK)
+		{
+			PVR_DPF((PVR_DBG_ERROR,"SGXScheduleCCBCommand: Wait for uKernel to Invalidate BIF cache failed"));
+			PVR_DBG_BREAK;
+		}
+		#endif
+	
+		psSGXHostCtl->ui32InvalStatus &= ~(PVRSRV_USSE_EDM_BIF_INVAL_COMPLETE);
+		
+		#if defined(PDUMP)
+		if ((ui32CallerID != ISR_ID) && (bPDumpIsSuspended == IMG_FALSE))
+		{
+			
+			PDUMPCOMMENTWITHFLAGS(0, "Host Control - Poll for BIF cache invalidate request to complete");
+			PDUMPMEMPOL(psSGXHostCtlMemInfo,
+						offsetof(SGXMKIF_HOST_CTL, ui32InvalStatus),
+						PVRSRV_USSE_EDM_BIF_INVAL_COMPLETE,
+						PVRSRV_USSE_EDM_BIF_INVAL_COMPLETE,
+						PDUMP_POLL_OPERATOR_EQUAL,
+						0,
+						MAKEUNIQUETAG(psSGXHostCtlMemInfo));
+			PDUMPMEM(IMG_NULL, psSGXHostCtlMemInfo, offsetof(SGXMKIF_HOST_CTL, ui32CleanupStatus), sizeof(IMG_UINT32), 0, MAKEUNIQUETAG(psSGXHostCtlMemInfo));
+		}
+		#endif 
+	}
+#endif
+	
 
 	psKernelCCB = psDevInfo->psKernelCCBInfo;
 
@@ -201,10 +261,11 @@ PVRSRV_ERROR SGXScheduleCCBCommand(PVRSRV_SGXDEV_INFO 	*psDevInfo,
 
 		SysAcquireData(&psSysData);
 
-		if (psSysData->bFlushCPUCache)
+		if (psSysData->bFlushAll)
 		{
-			OSFlushCPUCache();
-			psSysData->bFlushCPUCache = IMG_FALSE;
+			OSFlushCPUCacheKM();
+			
+			psSysData->bFlushAll = IMG_FALSE;
 		}
 	}
 #endif 
@@ -212,7 +273,7 @@ PVRSRV_ERROR SGXScheduleCCBCommand(PVRSRV_SGXDEV_INFO 	*psDevInfo,
 	psSGXCommand->ui32ServiceAddress = psDevInfo->aui32HostKickAddr[eCmdType];	 
 
 #if defined(PDUMP)
-	if (ui32CallerID != ISR_ID)
+	if ((ui32CallerID != ISR_ID) && (bPDumpIsSuspended == IMG_FALSE))
 	{
 		
 		PDUMPCOMMENTWITHFLAGS(ui32PDumpFlags, "Poll for space in the Kernel CCB\r\n");
@@ -271,7 +332,7 @@ PVRSRV_ERROR SGXScheduleCCBCommand(PVRSRV_SGXDEV_INFO 	*psDevInfo,
 	*psKernelCCB->pui32WriteOffset = (*psKernelCCB->pui32WriteOffset + 1) & 255;
 
 #if defined(PDUMP)
-	if (ui32CallerID != ISR_ID)
+	if ((ui32CallerID != ISR_ID) && (bPDumpIsSuspended == IMG_FALSE))
 	{
 	#if defined(FIX_HW_BRN_26620) && defined(SGX_FEATURE_SYSTEM_CACHE) && !defined(SGX_BYPASS_SYSTEM_CACHE)
 		PDUMPCOMMENTWITHFLAGS(ui32PDumpFlags, "Poll for previous Kernel CCB CMD to be read\r\n");
@@ -505,6 +566,13 @@ IMG_VOID SGXCleanupRequest(PVRSRV_DEVICE_NODE	*psDeviceNode,
 
 		psSGXHostCtl->ui32CleanupStatus &= ~(PVRSRV_USSE_EDM_CLEANUPCMD_COMPLETE);
 		PDUMPMEM(IMG_NULL, psSGXHostCtlMemInfo, offsetof(SGXMKIF_HOST_CTL, ui32CleanupStatus), sizeof(IMG_UINT32), 0, MAKEUNIQUETAG(psSGXHostCtlMemInfo));
+		
+		
+	#if defined(SGX_FEATURE_SYSTEM_CACHE)
+		psSGXDevInfo->ui32CacheControl |= (SGXMKIF_CC_INVAL_BIF_SL | SGXMKIF_CC_INVAL_DATA);
+	#else
+		psSGXDevInfo->ui32CacheControl |= SGXMKIF_CC_INVAL_DATA;
+	#endif
 	}
 }
 

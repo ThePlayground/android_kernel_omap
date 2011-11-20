@@ -233,7 +233,7 @@ DisableHostAccess (MMU_CONTEXT *psMMUContext)
 IMG_VOID MMU_InvalidateSystemLevelCache(PVRSRV_SGXDEV_INFO *psDevInfo)
 {
 	#if defined(SGX_FEATURE_MP)
-	psDevInfo->ui32CacheControl |= SGX_BIF_INVALIDATE_SLCACHE;
+	psDevInfo->ui32CacheControl |= SGXMKIF_CC_INVAL_BIF_SL;
 	#else
 	
 	PVR_UNREFERENCED_PARAMETER(psDevInfo);
@@ -243,7 +243,7 @@ IMG_VOID MMU_InvalidateSystemLevelCache(PVRSRV_SGXDEV_INFO *psDevInfo)
 
 IMG_VOID MMU_InvalidateDirectoryCache(PVRSRV_SGXDEV_INFO *psDevInfo)
 {
-	psDevInfo->ui32CacheControl |= SGX_BIF_INVALIDATE_PDCACHE;
+	psDevInfo->ui32CacheControl |= SGXMKIF_CC_INVAL_BIF_PD;
 	#if defined(SGX_FEATURE_SYSTEM_CACHE)
 	MMU_InvalidateSystemLevelCache(psDevInfo);
 	#endif 
@@ -252,7 +252,7 @@ IMG_VOID MMU_InvalidateDirectoryCache(PVRSRV_SGXDEV_INFO *psDevInfo)
 
 IMG_VOID MMU_InvalidatePageTableCache(PVRSRV_SGXDEV_INFO *psDevInfo)
 {
-	psDevInfo->ui32CacheControl |= SGX_BIF_INVALIDATE_PTCACHE;
+	psDevInfo->ui32CacheControl |= SGXMKIF_CC_INVAL_BIF_PT;
 	#if defined(SGX_FEATURE_SYSTEM_CACHE)
 	MMU_InvalidateSystemLevelCache(psDevInfo);
 	#endif 
@@ -1319,11 +1319,7 @@ MMU_UnmapPagesAndFreePTs (MMU_HEAP *psMMUHeap,
 
 		if (ppsPTInfoList[0] && ppsPTInfoList[0]->ui32ValidPTECount == 0)
 		{
-#if defined(ANDROID)
-			_DeferredFreePageTable(psMMUHeap, ui32PDIndex - psMMUHeap->ui32PDBaseIndex, IMG_FALSE);
-#else
 			_DeferredFreePageTable(psMMUHeap, ui32PDIndex - psMMUHeap->ui32PDBaseIndex, IMG_TRUE);
-#endif
 			bInvalidateDirectoryCache = IMG_TRUE;
 		}
 

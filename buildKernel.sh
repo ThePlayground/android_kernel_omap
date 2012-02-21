@@ -19,7 +19,13 @@ make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
 		cp "${j}" tmpdir/
 	done
 
-	cp ../tiwlan_drv.ko "tmpdir/"
+    cd /Volumes/android/android-tzb_ics4.0.1/system/wlan/ti/wilink_6_1/platforms/os/linux
+    export ARCH=arm
+    export CROSS_COMPILE=arm-none-eabi-
+    export HOST_PLATFORM=zoom2
+    export KERNEL_DIR=../../../../../../../kernel/android_kernel_omap
+    cd ../../../../../../../kernel/android_kernel_omap
+	cp -R /Volumes/android/android-tzb_ics4.0.1/system/wlan/ti/wilink_6_1/stad/build/linux/tiwlan_drv.ko "tmpdir/"
 
 	# now we begin to build our anykernel
 

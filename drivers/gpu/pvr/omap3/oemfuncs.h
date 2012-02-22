@@ -24,44 +24,33 @@
  *
  ******************************************************************************/
 
-#ifndef __INCLUDED_PRIVATE_DATA_H_
-#define __INCLUDED_PRIVATE_DATA_H_
+#if !defined(__OEMFUNCS_H__)
+#define __OEMFUNCS_H__
 
-#if defined(SUPPORT_DRI_DRM) && defined(PVR_SECURE_DRM_AUTH_EXPORT)
-#include <linux/list.h>
-#include <drm/drmP.h>
+#if defined (__cplusplus)
+extern "C" {
 #endif
 
-typedef struct
+typedef IMG_UINT32   (*PFN_SRV_BRIDGEDISPATCH)( IMG_UINT32  Ioctl,
+												IMG_BYTE   *pInBuf,
+												IMG_UINT32  InBufLen, 
+											    IMG_BYTE   *pOutBuf,
+												IMG_UINT32  OutBufLen,
+												IMG_UINT32 *pdwBytesTransferred);
+typedef struct PVRSRV_DC_OEM_JTABLE_TAG
 {
-	
-	IMG_UINT32 ui32OpenPID;
+	PFN_SRV_BRIDGEDISPATCH			pfnOEMBridgeDispatch;
+	IMG_PVOID						pvDummy1;
+	IMG_PVOID						pvDummy2;
+	IMG_PVOID						pvDummy3;
 
-#if defined(PVR_SECURE_FD_EXPORT)
-	
-	IMG_HANDLE hKernelMemInfo;
-#endif 
+} PVRSRV_DC_OEM_JTABLE;
 
-#if defined(SUPPORT_DRI_DRM) && defined(PVR_SECURE_DRM_AUTH_EXPORT)
-	
-	struct list_head sDRMAuthListItem;
+#define OEM_GET_EXT_FUNCS			(1<<1)
 
-	struct drm_file *psDRMFile;
-#endif
-
-#if defined(SUPPORT_MEMINFO_IDS)
-	
-	IMG_UINT64 ui64Stamp;
-#endif 
-
-	
-	IMG_HANDLE hBlockAlloc;
-
-#if defined(SUPPORT_DRI_DRM_EXT)
-	IMG_PVOID pPriv;	
-#endif
+#if defined(__cplusplus)
 }
-PVRSRV_FILE_PRIVATE_DATA;
+#endif
 
-#endif 
+#endif	
 

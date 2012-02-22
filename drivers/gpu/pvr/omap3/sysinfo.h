@@ -24,44 +24,17 @@
  *
  ******************************************************************************/
 
-#ifndef __INCLUDED_PRIVATE_DATA_H_
-#define __INCLUDED_PRIVATE_DATA_H_
+#if !defined(__SYSINFO_H__)
+#define __SYSINFO_H__
 
-#if defined(SUPPORT_DRI_DRM) && defined(PVR_SECURE_DRM_AUTH_EXPORT)
-#include <linux/list.h>
-#include <drm/drmP.h>
+#if defined(PVR_LINUX_USING_WORKQUEUES)
+#define MAX_HW_TIME_US				(1000000)
+#else
+#define MAX_HW_TIME_US				(500000)
 #endif
 
-typedef struct
-{
-	
-	IMG_UINT32 ui32OpenPID;
+#define WAIT_TRY_COUNT				(10000)
 
-#if defined(PVR_SECURE_FD_EXPORT)
-	
-	IMG_HANDLE hKernelMemInfo;
-#endif 
+#define SYS_DEVICE_COUNT 3 
 
-#if defined(SUPPORT_DRI_DRM) && defined(PVR_SECURE_DRM_AUTH_EXPORT)
-	
-	struct list_head sDRMAuthListItem;
-
-	struct drm_file *psDRMFile;
-#endif
-
-#if defined(SUPPORT_MEMINFO_IDS)
-	
-	IMG_UINT64 ui64Stamp;
-#endif 
-
-	
-	IMG_HANDLE hBlockAlloc;
-
-#if defined(SUPPORT_DRI_DRM_EXT)
-	IMG_PVOID pPriv;	
-#endif
-}
-PVRSRV_FILE_PRIVATE_DATA;
-
-#endif 
-
+#endif	

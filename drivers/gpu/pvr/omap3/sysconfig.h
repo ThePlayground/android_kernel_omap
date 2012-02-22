@@ -24,44 +24,40 @@
  *
  ******************************************************************************/
 
-#ifndef __INCLUDED_PRIVATE_DATA_H_
-#define __INCLUDED_PRIVATE_DATA_H_
+#if !defined(__SOCCONFIG_H__)
+#define __SOCCONFIG_H__
 
-#if defined(SUPPORT_DRI_DRM) && defined(PVR_SECURE_DRM_AUTH_EXPORT)
-#include <linux/list.h>
-#include <drm/drmP.h>
+#include "syscommon.h"
+
+#define VS_PRODUCT_NAME	"OMAP3"
+
+#if defined(SGX530) && (SGX_CORE_REV == 125)
+#define SYS_SGX_CLOCK_SPEED		200000000
+#else
+#define SYS_SGX_CLOCK_SPEED		110666666
 #endif
 
-typedef struct
-{
-	
-	IMG_UINT32 ui32OpenPID;
+#define SYS_SGX_CLOCK_SPEED_3630    200000000 /* Core Clk/2 */
+#define SYS_SGX_CLOCK_SPEED_3430    110000000 /* Core Clk/3 */
 
-#if defined(PVR_SECURE_FD_EXPORT)
-	
-	IMG_HANDLE hKernelMemInfo;
-#endif 
 
-#if defined(SUPPORT_DRI_DRM) && defined(PVR_SECURE_DRM_AUTH_EXPORT)
-	
-	struct list_head sDRMAuthListItem;
+#define SYS_SGX_HWRECOVERY_TIMEOUT_FREQ		(100)
+#define SYS_SGX_PDS_TIMER_FREQ				(1000)
 
-	struct drm_file *psDRMFile;
+#if !defined(SYS_SGX_ACTIVE_POWER_LATENCY_MS)
+#define SYS_SGX_ACTIVE_POWER_LATENCY_MS		(1)
 #endif
 
-#if defined(SUPPORT_MEMINFO_IDS)
-	
-	IMG_UINT64 ui64Stamp;
-#endif 
 
-	
-	IMG_HANDLE hBlockAlloc;
+#define SYS_OMAP3430_SGX_REGS_SYS_PHYS_BASE  0x50000000
 
-#if defined(SUPPORT_DRI_DRM_EXT)
-	IMG_PVOID pPriv;	
-#endif
-}
-PVRSRV_FILE_PRIVATE_DATA;
+#define SYS_OMAP3430_SGX_REGS_SIZE           0x4000
 
-#endif 
+#define SYS_OMAP3430_SGX_IRQ				 21
 
+#define SYS_OMAP3430_GP11TIMER_ENABLE_SYS_PHYS_BASE  0x48088024
+#define SYS_OMAP3430_GP11TIMER_REGS_SYS_PHYS_BASE	 0x48088028
+#define SYS_OMAP3430_GP11TIMER_TSICR_SYS_PHYS_BASE	 0x48088040
+
+ 
+#endif	

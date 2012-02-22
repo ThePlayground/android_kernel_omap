@@ -80,6 +80,9 @@ typedef struct _SGXMKIF_HOST_CTL_
 	volatile IMG_UINT32		ui32InitStatus;				
 	volatile IMG_UINT32		ui32PowerStatus;			
 	volatile IMG_UINT32		ui32CleanupStatus;			
+#if defined(FIX_HW_BRN_28889)
+	volatile IMG_UINT32		ui32InvalStatus;			
+#endif
 #if defined(SUPPORT_HW_RECOVERY)
 	IMG_UINT32				ui32uKernelDetectedLockups;	
 	IMG_UINT32				ui32HostDetectedLockups;	
@@ -229,13 +232,17 @@ typedef struct _SGXMKIF_HWDEVICE_SYNC_LIST_
 
 #define PVRSRV_USSE_EDM_CLEANUPCMD_COMPLETE 	(1UL << 0)	
 
+#if defined(FIX_HW_BRN_28889)
+#define PVRSRV_USSE_EDM_BIF_INVAL_COMPLETE 		(1UL << 0)	
+#endif
+
 #define PVRSRV_USSE_MISCINFO_READY		0x1UL
 #define PVRSRV_USSE_MISCINFO_GET_STRUCT_SIZES	0x2UL	
 #if defined(SUPPORT_SGX_EDM_MEMORY_DEBUG)
 #define PVRSRV_USSE_MISCINFO_MEMREAD			0x4UL	
 
 #if !defined(SGX_FEATURE_MULTIPLE_MEM_CONTEXTS)
-#define PVRSRV_USSE_MISCINFO_MEMREAD_FAIL		0x1UL << 31;	
+#define PVRSRV_USSE_MISCINFO_MEMREAD_FAIL		0x1UL << 31	
 #endif
 #endif
 
@@ -257,9 +264,10 @@ typedef struct _SGXMKIF_HWDEVICE_SYNC_LIST_
 #define SGX_BIF_DIR_LIST_INDEX_EDM	(0)
 #endif
 
-#define	SGX_BIF_INVALIDATE_PTCACHE	0x1
-#define	SGX_BIF_INVALIDATE_PDCACHE	0x2
-#define SGX_BIF_INVALIDATE_SLCACHE	0x4
+#define	SGXMKIF_CC_INVAL_BIF_PT	0x1
+#define	SGXMKIF_CC_INVAL_BIF_PD	0x2
+#define SGXMKIF_CC_INVAL_BIF_SL	0x4
+#define SGXMKIF_CC_INVAL_DATA	0x8
 
 
 typedef struct _SGX_MISCINFO_STRUCT_SIZES_

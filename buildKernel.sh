@@ -3,7 +3,7 @@
 # Copyright (C) 2011 Twisted Playground
 
 # This script is designed to compliment .bash_profile code to automate the build process by adding a typical shell command such as:
-# function buildKernel { echo "Mecha, Sholes, Release?"; read device; if [ "$device" == "mecha" ]; then  cd /Volumes/android/android-tzb_ics4.0.1/kernel/leanKernel-tbolt-ics;  ./buildlean.sh 1 $device; fi; if [ "$device" == "sholes" ]; then  cd /Volumes/android/android-tzb_ics4.0.1/kernel/android_kernel_omap;  ./buildKernel.sh 1 $device; fi; }
+# function buildKernel { echo "Mecha, Sholes, Release?"; read device; if [ "$device" == "mecha" ]; then  cd /Volumes/android/android-tzb_ics4.0.1/kernel/leanKernel-tbolt-ics;  ./buildlean.sh 1 $device; fi; if [ "$device" == "sholes" ]; then  cd /Volumes/android/android-tzb_ics4.0.1/kernel/android_kernel_omap;  ./buildKernel.sh 1 $device; fi; if [ "$device" == "release" ]; then echo "Mecha, Sholes?"; read profile; if [ "$profile" == "mecha" ]; then  cd /Volumes/android/android-tzb_ics4.0.1/kernel/leanKernel-tbolt-ics;  ./buildlean.sh 1 $device; fi; if [ "$profile" == "sholes" ]; then  cd /Volumes/android/android-tzb_ics4.0.1/kernel/android_kernel_omap;  ./buildKernel.sh 1 $device; fi; fi; }
 # This script is designed by Twisted Playground for use on MacOSX 10.7 but can be modified for other distributions of Mac and Linux
 
 PROPER=`echo $2 | sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g'`
@@ -44,13 +44,13 @@ cp -R arch/arm/boot/zImage ../../../$SHOLESREPO/kernel/kernel
 for j in $(find . -name "*.ko"); do
 cp "${j}" ../../../$SHOLESREPO/kernel/lib/modules
 done
-cd $BUILDDIR/system/wlan/ti/wilink_6_1/platforms/os/linux
-make clean -j$CPU_JOB_NUM
-export HOST_PLATFORM=zoom2
-export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
-make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
-cd $BUILDDIR/kernel/$KERNELSPEC
-cp -R $BUILDDIR/system/wlan/ti/wilink_6_1/stad/build/linux/tiwlan_drv.ko ../../../$SHOLESREPO/kernel/lib/modules
+#cd $BUILDDIR/system/wlan/ti/wilink_6_1/platforms/os/linux
+#make clean -j$CPU_JOB_NUM
+#export HOST_PLATFORM=zoom2
+#export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
+#make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
+#cd $BUILDDIR/kernel/$KERNELSPEC
+#cp -R $BUILDDIR/system/wlan/ti/wilink_6_1/stad/build/linux/tiwlan_drv.ko ../../../$SHOLESREPO/kernel/lib/modules
 
 if [ -e ../../../$SHOLESREPO/kernel/kernel ]; then
 cd ../../../$SHOLESREPO
@@ -66,13 +66,14 @@ cp arch/arm/boot/zImage tmpdir/
 for j in $(find . -name "*.ko"); do
     cp "${j}" tmpdir/
 done
-cd $BUILDDIR/system/wlan/ti/wilink_6_1/platforms/os/linux
-make clean -j$CPU_JOB_NUM
-export HOST_PLATFORM=zoom2
-export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
-make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
-cd $BUILDDIR/kernel/$KERNELSPEC
-cp -R $BUILDDIR/system/wlan/ti/wilink_6_1/stad/build/linux/tiwlan_drv.ko tmpdir
+#cd $BUILDDIR/system/wlan/ti/wilink_6_1/platforms/os/linux
+#make clean -j$CPU_JOB_NUM
+#export HOST_PLATFORM=zoom2
+#export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
+#make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
+#cd $BUILDDIR/kernel/$KERNELSPEC
+# cp -R $BUILDDIR/system/wlan/ti/wilink_6_1/stad/build/linux/tiwlan_drv.ko tmpdir
+cp -R ../../../$SHOLESREPO/kernel/lib/modules/tiwlan_drv.ko tmpdir
 cp -a anykernel.tpl tmpdir/anykernel
 mkdir -p tmpdir/anykernel/kernel
 mkdir -p tmpdir/anykernel/system/lib/modules

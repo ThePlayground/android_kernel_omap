@@ -85,8 +85,9 @@ done
 echo "making zip file"
 cd tmpdir/anykernel
 zip -r "TwistedZero_deprimedKernel_ICS.zip" *
-cp -R TwistedZero_droidKernel_deprimed_ICS.zip /Volumes/android/Twisted-Playground/Kernel
-cd /Volumes/android/Twisted-Playground
+cp -R TwistedZero_deprimedKernel_ICS.zip $ANDROIDREPO/Kernel
+rm -fr tmpdir
+cd $ANDROIDREPO
 git checkout gh-pages
 git commit -a -m "Automated Sholes Kernel Build - Patch"
 git push git@github.com:TwistedUmbrella/Twisted-Playground.git HEAD:ics

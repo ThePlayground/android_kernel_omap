@@ -44,13 +44,13 @@ cp -R arch/arm/boot/zImage ../../../$SHOLESREPO/kernel/kernel
 for j in $(find . -name "*.ko"); do
 cp "${j}" ../../../$SHOLESREPO/kernel/lib/modules
 done
-#cd $BUILDDIR/system/wlan/ti/wilink_6_1/platforms/os/linux
-#make clean -j$CPU_JOB_NUM
-#export HOST_PLATFORM=zoom2
-#export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
-#make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
-#cd $BUILDDIR/kernel/$KERNELSPEC
-#cp -R $BUILDDIR/system/wlan/ti/wilink_6_1/stad/build/linux/tiwlan_drv.ko ../../../$SHOLESREPO/kernel/lib/modules
+cd $BUILDDIR/system/wlan/ti/wilink_6_1/platforms/os/linux
+make clean -j$CPU_JOB_NUM
+export HOST_PLATFORM=zoom2
+export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
+make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
+cd $BUILDDIR/kernel/$KERNELSPEC
+cp -R $BUILDDIR/system/wlan/ti/wilink_6_1/stad/build/linux/tiwlan_drv.ko ../../../$SHOLESREPO/kernel/lib/modules
 
 if [ -e ../../../$SHOLESREPO/kernel/kernel ]; then
 cd ../../../$SHOLESREPO
@@ -66,14 +66,13 @@ cp arch/arm/boot/zImage tmpdir/
 for j in $(find . -name "*.ko"); do
     cp "${j}" tmpdir/
 done
-#cd $BUILDDIR/system/wlan/ti/wilink_6_1/platforms/os/linux
-#make clean -j$CPU_JOB_NUM
-#export HOST_PLATFORM=zoom2
-#export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
-#make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
-#cd $BUILDDIR/kernel/$KERNELSPEC
-# cp -R $BUILDDIR/system/wlan/ti/wilink_6_1/stad/build/linux/tiwlan_drv.ko tmpdir
-cp -R ../../../$SHOLESREPO/kernel/lib/modules/tiwlan_drv.ko tmpdir
+cd $BUILDDIR/system/wlan/ti/wilink_6_1/platforms/os/linux
+make clean -j$CPU_JOB_NUM
+export HOST_PLATFORM=zoom2
+export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
+make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
+cd $BUILDDIR/kernel/$KERNELSPEC
+cp -R $BUILDDIR/system/wlan/ti/wilink_6_1/stad/build/linux/tiwlan_drv.ko tmpdir
 cp -a anykernel.tpl tmpdir/anykernel
 mkdir -p tmpdir/anykernel/kernel
 mkdir -p tmpdir/anykernel/system/lib/modules
@@ -86,6 +85,7 @@ echo "making zip file"
 cd tmpdir/anykernel
 zip -r "TwistedZero_deprimedKernel_ICS.zip" *
 cp -R TwistedZero_deprimedKernel_ICS.zip $ANDROIDREPO/Kernel
+cd ../../
 rm -fr tmpdir
 cd $ANDROIDREPO
 git checkout gh-pages

@@ -10,6 +10,7 @@ PROPER=`echo $2 | sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g'`
 
 HANDLE=TwistedZero
 BUILDDIR=/Volumes/android/android-tzb_ics4.0.1
+TIWIFIDIR=/Volumes/android/github-aosp_source/system_wlan_ti
 KERNELSPEC=android_kernel_omap
 ANDROIDREPO=/Volumes/android/Twisted-Playground
 DROIDGITHUB=TwistedUmbrella/Twisted-Playground.git
@@ -45,21 +46,21 @@ for j in $(find . -name "*.ko"); do
 cp "${j}" ../../../$SHOLESREPO/kernel/lib/modules
 done
 
-cd $BUILDDIR/system/wlan/ti/wilink_6_1/platforms/os/linux
+cd $TIWIFIDIR/wilink_6_1/platforms/os/linux
 make clean -j$CPU_JOB_NUM
 export HOST_PLATFORM=zoom2
 export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
 make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
 cd $BUILDDIR/kernel/$KERNELSPEC
-cp -R $BUILDDIR/system/wlan/ti/wilink_6_1/stad/build/linux/tiwlan_drv.ko ../../../$SHOLESREPO/kernel/lib/modules
+cp -R $TIWIFIDIR/wilink_6_1/stad/build/linux/tiwlan_drv.ko ../../../$SHOLESREPO/kernel/lib/modules
 
-cd $BUILDDIR/system/wlan/ti/WiLink_AP/platforms/os/linux
+cd $TIWIFIDIR/WiLink_AP/platforms/os/linux
 make clean -j$CPU_JOB_NUM
 export HOST_PLATFORM=zoom2
 export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
 make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
 cd $BUILDDIR/kernel/$KERNELSPEC
-cp -R $BUILDDIR/system/wlan/ti/WiLink_AP/stad/build/linux/tiap_drv.ko ../../../$SHOLESREPO/kernel/lib/modules
+cp -R $TIWIFIDIR/WiLink_AP/stad/build/linux/tiap_drv.ko ../../../$SHOLESREPO/kernel/lib/modules
 
 if [ -e ../../../$SHOLESREPO/kernel/kernel ]; then
 cd ../../../$SHOLESREPO
@@ -76,21 +77,21 @@ for j in $(find . -name "*.ko"); do
     cp "${j}" tmpdir/
 done
 
-cd $BUILDDIR/system/wlan/ti/wilink_6_1/platforms/os/linux
+cd $TIWIFIDIR/wilink_6_1/platforms/os/linux
 make clean -j$CPU_JOB_NUM
 export HOST_PLATFORM=zoom2
 export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
 make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
 cd $BUILDDIR/kernel/$KERNELSPEC
-cp -R $BUILDDIR/system/wlan/ti/wilink_6_1/stad/build/linux/tiwlan_drv.ko tmpdir
+cp -R $TIWIFIDIR/wilink_6_1/stad/build/linux/tiwlan_drv.ko tmpdir
 
-cd $BUILDDIR/system/wlan/ti/WiLink_AP/platforms/os/linux
+cd $TIWIFIDIR/WiLink_AP/platforms/os/linux
 make clean -j$CPU_JOB_NUM
 export HOST_PLATFORM=zoom2
 export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
 make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
 cd $BUILDDIR/kernel/$KERNELSPEC
-cp -R $BUILDDIR/system/wlan/ti/WiLink_AP/stad/build/linux/tiap_drv.ko tmpdir
+cp -R $TIWIFIDIR/WiLink_AP/stad/build/linux/tiap_drv.ko tmpdir
 
 cp -a anykernel.tpl tmpdir/anykernel
 mkdir -p tmpdir/anykernel/kernel

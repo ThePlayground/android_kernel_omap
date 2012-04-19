@@ -9,109 +9,112 @@
 PROPER=`echo $2 | sed 's/\([a-z]\)\([a-zA-Z0-9]*\)/\u\1\2/g'`
 
 HANDLE=TwistedZero
-BUILDDIR=/Volumes/android/android-tzb_ics4.0.1
 TIWIFIDIR=/Volumes/android/github-aosp_source/system_wlan_ti
-KERNELSPEC=android_kernel_omap
+KERNELSPEC=/Volumes/android/android_kernel_omap
 ANDROIDREPO=/Volumes/android/Twisted-Playground
 DROIDGITHUB=TwistedUmbrella/Twisted-Playground.git
-SHOLESREPO=github-aosp_source/android_device_moto_sholes
+SHOLESREPO=/Volumes/android/github-aosp_source/android_device_moto_sholes
 SHOLESGITHUB=TwistedPlayground/android_device_moto_sholes.git
-ICSREPO=github-aosp_source/android_system_core
-
-make clean -j$CPU_JOB_NUM
+zipfile=$HANDLE"_deprimedKernel_ICS.zip"
 
 CPU_JOB_NUM=16
-TOOLCHAIN_PREFIX=arm-none-eabi-
+TOOLCHAIN_PREFIX=$TOOLCHAINDIR/arm-eabi-
+
+echo "Config Name? "
+ls config
+read configfile
+cp -R config/$configfile .config
+
+make clean -j$CPU_JOB_NUM
 
 make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
 
 find . -name "*.ko" | xargs ${TOOLCHAIN_PREFIX}strip --strip-unneeded
 
-if [ "$2" == "sholes" ]; then
+if [ -e arch/arm/boot/zImage ]; then
+
+cp .config arch/arm/configs/icsholes_defconfig
+
+if [ "$1" == "1" ]; then
 
 echo "adding to build"
 
-if [ ! -e ../../../$SHOLESREPO/kernel ]; then
-mkdir ../../../$SHOLESREPO/kernel
-fi
-if [ ! -e ../../../$SHOLESREPO/kernel/lib ]; then
-mkdir ../../../$SHOLESREPO/kernel/lib
-fi
-if [ ! -e ../../../$SHOLESREPO/kernel/lib/modules ]; then
-mkdir ../../../$SHOLESREPO/kernel/lib/modules
-fi
-
-cp -R arch/arm/boot/zImage ../../../$SHOLESREPO/kernel/kernel
+cp -R arch/arm/boot/zImage $SHOLESREPO/prebuilt/root/kernel
+rm -r $SHOLESREPO/prebuilt/system/lib/modules/*
 for j in $(find . -name "*.ko"); do
-cp "${j}" ../../../$SHOLESREPO/kernel/lib/modules
+cp "${j}" $SHOLESREPO/prebuilt/system/lib/modules
 done
 
 cd $TIWIFIDIR/wilink_6_1/platforms/os/linux
 make clean -j$CPU_JOB_NUM
 export HOST_PLATFORM=zoom2
-export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
+export KERNEL_DIR=$KERNELSPEC
 make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
-cd $BUILDDIR/kernel/$KERNELSPEC
-cp -R $TIWIFIDIR/wilink_6_1/stad/build/linux/tiwlan_drv.ko ../../../$SHOLESREPO/kernel/lib/modules
+cd $KERNELSPEC
+cp -R $TIWIFIDIR/wilink_6_1/stad/build/linux/tiwlan_drv.ko $SHOLESREPO/kernel/lib/modules
 
 cd $TIWIFIDIR/WiLink_AP/platforms/os/linux
 make clean -j$CPU_JOB_NUM
 export HOST_PLATFORM=zoom2
-export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
+export KERNEL_DIR=$KERNELSPEC
 make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
-cd $BUILDDIR/kernel/$KERNELSPEC
-cp -R $TIWIFIDIR/WiLink_AP/stad/build/linux/tiap_drv.ko ../../../$SHOLESREPO/kernel/lib/modules
+cd $KERNELSPEC
+cp -R $TIWIFIDIR/WiLink_AP/stad/build/linux/tiap_drv.ko $SHOLESREPO/kernel/lib/modules
 
-if [ -e ../../../$SHOLESREPO/kernel/kernel ]; then
-cd ../../../$SHOLESREPO
+cd $SHOLESREPO
 git commit -a -m "Automated Kernel Update - ${PROPER}"
-git push git@github.com:$SHOLESGITHUB HEAD:ics
-fi
+git push git@github.com:$SHOOTGITHUB HEAD:ics
 
 else
 
-rm -fr tmpdir
-mkdir tmpdir
-cp arch/arm/boot/zImage tmpdir/
+if [ ! -e zip.aosp/system/lib ]; then
+mkdir zip.aosp/system/lib
+fi
+if [ ! -e zip.aosp/system/lib/modules ]; then
+mkdir zip.aosp/system/lib/modules
+else
+rm -r zip.aosp/system/lib/modules
+mkdir zip.aosp/system/lib/modules
+fi
+
 for j in $(find . -name "*.ko"); do
-    cp "${j}" tmpdir/
+cp -R "${j}" zip.aosp/system/lib/modules
 done
+cp -R arch/arm/boot/zImage mkboot.aosp
 
 cd $TIWIFIDIR/wilink_6_1/platforms/os/linux
 make clean -j$CPU_JOB_NUM
 export HOST_PLATFORM=zoom2
-export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
+export KERNEL_DIR=$KERNELSPEC
 make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
-cd $BUILDDIR/kernel/$KERNELSPEC
-cp -R $TIWIFIDIR/wilink_6_1/stad/build/linux/tiwlan_drv.ko tmpdir
+cd $KERNELSPEC
+cp -R $TIWIFIDIR/wilink_6_1/stad/build/linux/tiwlan_drv.ko zip.aosp/system/lib/modules
 
 cd $TIWIFIDIR/WiLink_AP/platforms/os/linux
 make clean -j$CPU_JOB_NUM
 export HOST_PLATFORM=zoom2
-export KERNEL_DIR=$BUILDDIR/kernel/$KERNELSPEC
+export KERNEL_DIR=$KERNELSPEC
 make -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN_PREFIX
-cd $BUILDDIR/kernel/$KERNELSPEC
-cp -R $TIWIFIDIR/WiLink_AP/stad/build/linux/tiap_drv.ko tmpdir
+cd $KERNELSPEC
+cp -R $TIWIFIDIR/WiLink_AP/stad/build/linux/tiap_drv.ko zip.aosp/system/lib/modules
 
-cp -a anykernel.tpl tmpdir/anykernel
-mkdir -p tmpdir/anykernel/kernel
-mkdir -p tmpdir/anykernel/system/lib/modules
-cp tmpdir/zImage tmpdir/anykernel/kernel
-for j in tmpdir/*.ko; do
-    cp "${j}" tmpdir/anykernel/system/lib/modules/
-done
+cd mkboot.aosp
+echo "making boot image"
+./img.sh
 
 echo "making zip file"
-cd tmpdir/anykernel
-zip -r "TwistedZero_deprimedKernel_ICS.zip" *
-cp -R TwistedZero_deprimedKernel_ICS.zip $ANDROIDREPO/Kernel
-cd ../../
-rm -fr tmpdir
+cp -R boot.img ../zip.aosp
+cd ../zip.aosp
+rm *.zip
+zip -r $zipfile *
+cp -R $KERNELSPEC/zip.aosp/$zipfile $ANDROIDREPO/Kernel/$zipfile
 cd $ANDROIDREPO
 git checkout gh-pages
-git commit -a -m "Automated Sholes Kernel Build - Patch"
-git push git@github.com:TwistedUmbrella/Twisted-Playground.git HEAD:ics
+git commit -a -m "Automated Patch Kernel Build - ${PROPER}"
+git push git@github.com:$DROIDGITHUB HEAD:ics -f
 
 fi
 
-cd $BUILDDIR/kernel/$KERNELSPEC
+fi
+
+cd $KERNELSPEC
